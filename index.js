@@ -30,16 +30,22 @@ client.on('messageCreate', message => {
   }
 });
 
-// 🔥 DIAGNÓSTICO DEL TOKEN
+// 🔥 Diagnóstico del TOKEN
 if (!process.env.TOKEN) {
   console.log("❌ TOKEN no detectado en Render");
 } else {
   console.log("✅ TOKEN detectado");
 }
 
-client.login(process.env.TOKEN).catch(err => {
-  console.error("❌ Error al iniciar sesión:", err);
-});
+// 🔥 Login con error detallado
+client.login(process.env.TOKEN)
+  .then(() => {
+    console.log("🔄 Intentando iniciar sesión...");
+  })
+  .catch(err => {
+    console.error("❌ ERROR REAL AL HACER LOGIN:");
+    console.error(err);
+  });
 
 const express = require("express");
 const app = express();
