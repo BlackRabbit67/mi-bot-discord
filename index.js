@@ -14,7 +14,7 @@ const ROL_ID = "784521679731687474";
 const cooldown = new Map();
 const DOS_HORAS = 2 * 60 * 60 * 1000;
 
-client.on('ready', () => {
+client.once('ready', () => {
   console.log(`✅ Bot conectado como ${client.user.tag}`);
 });
 
