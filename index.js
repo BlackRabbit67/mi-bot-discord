@@ -14,12 +14,11 @@ const cooldown = new Map();
 const DOS_HORAS = 2 * 60 * 60 * 1000;
 
 client.on('ready', () => {
-  console.log(`Bot conectado como ${client.user.tag}`);
+  console.log(`✅ Bot conectado como ${client.user.tag}`);
 });
 
 client.on('messageCreate', message => {
   if (message.author.bot) return;
-
   if (!message.member.roles.cache.has(ROL_ID)) return;
 
   const ahora = Date.now();
@@ -31,7 +30,16 @@ client.on('messageCreate', message => {
   }
 });
 
-client.login(process.env.TOKEN);
+// 🔥 DIAGNÓSTICO DEL TOKEN
+if (!process.env.TOKEN) {
+  console.log("❌ TOKEN no detectado en Render");
+} else {
+  console.log("✅ TOKEN detectado");
+}
+
+client.login(process.env.TOKEN).catch(err => {
+  console.error("❌ Error al iniciar sesión:", err);
+});
 
 const express = require("express");
 const app = express();
