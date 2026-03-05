@@ -136,96 +136,100 @@ client.on('messageCreate', async message => {
     return;
   }
 
-  // =========================
-  // 🔵 COMANDO !fortnite
-  // =========================
+// =========================
+// 🔵 COMANDO !fortnite
+// =========================
 
-  if (message.content.startsWith("!fortnite")) {
+if (message.content.startsWith("!fortnite")) {
 
-    const jugador = message.content.slice(9).trim();
+  const jugador = message.content.slice(9).trim();
 
-    if (!jugador) {
-      return message.reply("Ejemplo: !fortnite Ninja");
-    }
+  if (!jugador) {
+    return message.reply("Ejemplo: !fortnite Ninja");
+  }
 
-    try {
+  try {
 
-      let data = null;
-      let plataforma = "";
+    let data = null;
+    let plataforma = "";
 
-      const plataformas = [
-        { api: "epic", nombre: "💻 PC" },
-        { api: "psn", nombre: "🎮 PlayStation" },
-        { api: "xbl", nombre: "🟢 Xbox" }
-      ];
+    const plataformas = [
+      { api: "epic", nombre: "💻 PC" },
+      { api: "psn", nombre: "🎮 PlayStation" },
+      { api: "xbl", nombre: "🟢 Xbox" }
+    ];
 
-      for (const p of plataformas) {
+    for (const p of plataformas) {
 
-        try {
+      try {
 
-          const res = await axios.get("https://fortnite-api.com/v2/stats/br/v2", {
+        const res = await axios.get(
+          "https://fortnite-api.com/v2/stats/br/v2",
+          {
             params: {
               name: jugador,
               accountType: p.api
             }
-          });
-
-          if (res.data && res.data.data) {
-            data = res.data.data;
-            plataforma = p.nombre;
-            break;
           }
+        );
 
-        } catch {}
+        if (res.data && res.data.data) {
+          data = res.data.data;
+          plataforma = p.nombre;
+          break;
+        }
 
+      } catch (err) {
+        continue;
       }
-
-      if (!data) {
-        return message.reply("❌ No encontré ese jugador.");
-      }
-
-      const stats = data.stats.all.overall;
-
-      const winrate = stats.matches > 0
-        ? ((stats.wins / stats.matches) * 100).toFixed(1)
-        : "0";
-
-      const avatar = `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(jugador)}`;
-
-      await message.channel.send({
-
-        embeds: [{
-          color: 0x3498DB,
-          title: `📊 ${jugador}`,
-          thumbnail: { url: avatar },
-
-          description:
-          "━━━━━━━━━━━━━━━━━━\n" +
-          `🖥️ **Plataforma:** ${plataforma}\n\n` +
-          `🏆 **Victorias:** ${stats.wins}\n\n` +
-          `🎮 **Partidas:** ${stats.matches}\n\n` +
-          `⚔️ **Kills:** ${stats.kills}\n\n` +
-          `🎯 **K/D:** ${stats.kd}\n\n` +
-          `📈 **Winrate:** ${winrate}%\n\n` +
-          `⭐ **Nivel:** ${data.battlePass.level}\n` +
-          "━━━━━━━━━━━━━━━━━━",
-
-          footer: { text: "Estadísticas de Fortnite" }
-
-        }]
-
-      });
-
-    } catch (error) {
-
-      console.log(error.message);
-      message.reply("⚠️ Error obteniendo estadísticas.");
 
     }
 
-    return;
+    if (!data) {
+      return message.reply("❌ No encontré ese jugador o no tiene estadísticas públicas.");
+    }
+
+    const stats = data.stats.all.overall;
+
+    const winrate = stats.matches > 0
+      ? ((stats.wins / stats.matches) * 100).toFixed(1)
+      : "0";
+
+    const avatar = `https://api.dicebear.com/7.x/bottts/png?seed=${encodeURIComponent(jugador)}`;
+
+    await message.channel.send({
+
+      embeds: [{
+        color: 0x3498DB,
+        title: `📊 ${jugador}`,
+        thumbnail: { url: avatar },
+
+        description:
+        "━━━━━━━━━━━━━━━━━━\n" +
+        `🖥️ **Plataforma:** ${plataforma}\n\n` +
+        `🏆 **Victorias:** ${stats.wins}\n\n` +
+        `🎮 **Partidas:** ${stats.matches}\n\n` +
+        `⚔️ **Kills:** ${stats.kills}\n\n` +
+        `🎯 **K/D:** ${stats.kd}\n\n` +
+        `📈 **Winrate:** ${winrate}%\n\n` +
+        `⭐ **Nivel:** ${data.battlePass.level}\n` +
+        "━━━━━━━━━━━━━━━━━━",
+
+        footer: { text: "Estadísticas de Fortnite" }
+
+      }]
+
+    });
+
+  } catch (error) {
+
+    console.log(error.message);
+    message.reply("⚠️ Error obteniendo estadísticas.");
+
   }
 
+  return;
+}
   // =========================
   // 🌐 COMANDO !servidores
   // =========================
