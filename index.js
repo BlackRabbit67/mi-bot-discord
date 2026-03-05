@@ -137,7 +137,7 @@ client.on('messageCreate', async message => {
     return;
   }
 
-  // =========================
+ // =========================
 // 🔵 COMANDO !fortnite
 // =========================
 
@@ -151,25 +151,48 @@ if (message.content.toLowerCase().startsWith("!fortnite")) {
 
   try {
 
-    const res = await axios.get(
-      `https://fortniteapi.io/v1/stats?username=${encodeURIComponent(jugador)}&platform=epic`,
-      {
-        headers: {
-          Authorization: process.env.FORTNITE_API_KEY
-        }
-      }
-    );
+    let data = null;
+    let plataforma = "";
 
-    if (!res.data || !res.data.global_stats) {
+    const plataformas = [
+      { api: "epic", nombre: "💻 PC" },
+      { api: "psn", nombre: "🎮 PlayStation" },
+      { api: "xbl", nombre: "🟢 Xbox" }
+    ];
+
+    for (const p of plataformas) {
+
+      try {
+
+        const res = await axios.get(
+          `https://fortniteapi.io/v1/stats?username=${encodeURIComponent(jugador)}&platform=${p.api}`,
+          {
+            headers: {
+              Authorization: process.env.FORTNITE_API_KEY
+            }
+          }
+        );
+
+        if (res.data && res.data.global_stats) {
+          data = res.data.global_stats;
+          plataforma = p.nombre;
+          break;
+        }
+
+      } catch (err) {
+        continue;
+      }
+
+    }
+
+    if (!data) {
       return message.reply("❌ No encontré ese jugador.");
     }
 
-    const stats = res.data.global_stats;
-
-    const wins = stats.wins;
-    const matches = stats.matches;
-    const kills = stats.kills;
-    const kd = stats.kd;
+    const wins = data.wins;
+    const matches = data.matches;
+    const kills = data.kills;
+    const kd = data.kd;
 
     const winrate = matches > 0
       ? ((wins / matches) * 100).toFixed(1)
@@ -186,6 +209,7 @@ if (message.content.toLowerCase().startsWith("!fortnite")) {
 
         description:
         "━━━━━━━━━━━━━━━━━━\n" +
+        `🖥️ **Plataforma:** ${plataforma}\n\n` +
         `🏆 **Victorias:** ${wins}\n\n` +
         `🎮 **Partidas:** ${matches}\n\n` +
         `⚔️ **Kills:** ${kills}\n\n` +
@@ -202,7 +226,7 @@ if (message.content.toLowerCase().startsWith("!fortnite")) {
   } catch (error) {
 
     console.log(error.response?.data || error.message);
-    message.reply("⚠️ No pude obtener estadísticas de ese jugador.");
+    message.reply("⚠️ Error obteniendo estadísticas.");
 
   }
 
