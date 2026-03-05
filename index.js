@@ -219,6 +219,56 @@ client.on('messageCreate', async message => {
 
     }
 
+    return;
+  }
+
+  // =========================
+  // ❓ COMANDO !ayuda
+  // =========================
+
+  if (message.content === "!ayuda") {
+
+    await message.channel.send({
+      embeds: [
+        {
+          color: 0xE74C3C,
+          author: {
+            name: message.author.username,
+            icon_url: message.author.displayAvatarURL()
+          },
+          title: "📖 Centro de Comandos",
+          description:
+            "━━━━━━━━━━━━━━━━━━\n\n" +
+
+            "🎮 **Juegos**\n" +
+            "`!game nombre`\n" +
+            "Muestra información de cualquier videojuego.\n\n" +
+
+            "🎮 **Fortnite**\n" +
+            "`!fortnite jugador`\n" +
+            "Muestra estadísticas del jugador.\n\n" +
+
+            "`!servidores`\n" +
+            "Estado de los servidores de Fortnite.\n\n" +
+
+            "⚙️ **Utilidades**\n" +
+            "`!cagada mensaje`\n" +
+            "El bot envía tu mensaje como si fuera él.\n\n" +
+
+            "❓ **Información**\n" +
+            "`!ayuda`\n" +
+            "Muestra esta lista de comandos.\n\n" +
+
+            "━━━━━━━━━━━━━━━━━━",
+
+          footer: {
+            text: "Sistema de ayuda del bot"
+          }
+        }
+      ]
+    });
+
+    return;
   }
 
   // =========================
