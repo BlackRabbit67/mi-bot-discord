@@ -17,9 +17,62 @@ const ROL_ID = "784521679731687474";
 const cooldown = new Map();
 const UNA_HORA = 1 * 60 * 60 * 1000;
 
+// =========================
+// 🟣 FORTNITE UPDATE DETECTOR
+// =========================
+
+const FORTNITE_CHANNEL_ID = "1298008832471208008";
+const FORTNITE_ROLE_ID = "964381722173116446";
+
+let lastNewsHash = null;
+
+async function checkFortniteNews() {
+  try {
+
+    const response = await axios.get("https://fortnite-api.com/v2/news");
+    const data = response.data.data.br;
+
+    const newHash = data.hash;
+
+    if (!lastNewsHash) {
+      lastNewsHash = newHash;
+      return;
+    }
+
+    if (newHash !== lastNewsHash) {
+
+      const channel = client.channels.cache.get(FORTNITE_CHANNEL_ID);
+      if (!channel) return;
+
+      const noticia = data.motds[0];
+
+      await channel.send({
+        content: `<@&${FORTNITE_ROLE_ID}> 🚨 **Nueva actualización de Fortnite detectada**`,
+        embeds: [
+          {
+            color: 0x9B59B6,
+            title: noticia.title,
+            description: noticia.body,
+            image: { url: noticia.image },
+            footer: { text: "Actualización detectada automáticamente" }
+          }
+        ]
+      });
+
+      lastNewsHash = newHash;
+    }
+
+  } catch (error) {
+    console.error("Error revisando Fortnite:", error.message);
+  }
+}
+
 // 🔥 Bot listo
 client.once('clientReady', () => {
   console.log(`✅ Bot conectado como ${client.user.tag}`);
+
+  // revisar actualizaciones cada 10 minutos
+  setInterval(checkFortniteNews, 600000);
 });
 
 client.on('messageCreate', async message => {
@@ -54,7 +107,7 @@ client.on('messageCreate', async message => {
       await message.channel.send({
         embeds: [
           {
-            color: 0x8A2BE2, // violeta elegante
+            color: 0x8A2BE2,
             author: {
               name: message.author.username,
               icon_url: message.author.displayAvatarURL()
