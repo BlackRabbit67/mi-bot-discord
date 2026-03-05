@@ -18,7 +18,7 @@ const cooldown = new Map();
 const UNA_HORA = 1 * 60 * 60 * 1000;
 
 // =========================
-// 🟢 FORTNITE UPDATE DETECTOR
+// 🟢 DETECTOR DE ACTUALIZACIONES
 // =========================
 
 const FORTNITE_CHANNEL_ID = "1298008832471208008";
@@ -48,16 +48,14 @@ async function checkFortniteNews() {
       const noticia = data.motds[0];
 
       await channel.send({
-        content: `<@&${FORTNITE_ROLE_ID}> 🚨 **Nueva actualización de Fortnite detectada**`,
-        embeds: [
-          {
-            color: 0x2ECC71,
-            title: noticia.title,
-            description: noticia.body,
-            image: { url: noticia.image },
-            footer: { text: "Actualización detectada automáticamente" }
-          }
-        ]
+        content: `<@&${FORTNITE_ROLE_ID}> 🚨 **Nueva actualización de Fortnite**`,
+        embeds: [{
+          color: 0x2ECC71,
+          title: noticia.title,
+          description: noticia.body,
+          image: { url: noticia.image },
+          footer: { text: "Actualización detectada automáticamente" }
+        }]
       });
 
       lastNewsHash = newHash;
@@ -65,12 +63,13 @@ async function checkFortniteNews() {
     }
 
   } catch (error) {
-    console.error("Error revisando Fortnite:", error.message);
+    console.log("Error revisando Fortnite:", error.message);
   }
 
 }
 
-// 🔥 Bot listo
+// 🔥 BOT LISTO
+
 client.once('clientReady', () => {
 
   console.log(`✅ Bot conectado como ${client.user.tag}`);
@@ -108,25 +107,23 @@ client.on('messageCreate', async message => {
       const generos = game.genres?.map(g => g.name).join(", ") || "No disponible";
 
       await message.channel.send({
-        embeds: [
-          {
-            color: 0x8A2BE2,
-            author: {
-              name: message.author.username,
-              icon_url: message.author.displayAvatarURL()
-            },
-            title: `🎮 ${game.name}`,
-            image: { url: game.background_image },
-            description:
-              "━━━━━━━━━━━━━━━━━━\n" +
-              `**Plataformas:** ${plataformas}\n\n` +
-              `**Rating:** ⭐ ${game.rating}/5\n\n` +
-              `**Lanzamiento:** 📅 ${game.released}\n\n` +
-              `**Géneros:** 🎯 ${generos}\n` +
-              "━━━━━━━━━━━━━━━━━━",
-            footer: { text: "Información obtenida de RAWG" }
-          }
-        ]
+        embeds: [{
+          color: 0x8A2BE2,
+          author: {
+            name: message.author.username,
+            icon_url: message.author.displayAvatarURL()
+          },
+          title: `🎮 ${game.name}`,
+          image: { url: game.background_image },
+          description:
+            "━━━━━━━━━━━━━━━━━━\n" +
+            `**Plataformas:** ${plataformas}\n\n` +
+            `**Rating:** ⭐ ${game.rating}/5\n\n` +
+            `**Lanzamiento:** 📅 ${game.released}\n\n` +
+            `**Géneros:** 🎯 ${generos}\n` +
+            "━━━━━━━━━━━━━━━━━━",
+          footer: { text: "Información obtenida de RAWG" }
+        }]
       });
 
     } catch (error) {
@@ -140,7 +137,7 @@ client.on('messageCreate', async message => {
   }
 
   // =========================
-  // 🔵 COMANDO !fortnite jugador
+  // 🔵 COMANDO !fortnite
   // =========================
 
   if (message.content.startsWith("!fortnite")) {
@@ -153,11 +150,15 @@ client.on('messageCreate', async message => {
 
     try {
 
-      const statsResponse = await axios.get("https://fortnite-api.com/v2/stats/br/v2", {
+      const res = await axios.get(`https://fortnite-api.com/v2/stats/br/v2`, {
         params: { name: jugador }
       });
 
-      const data = statsResponse.data.data;
+      if (!res.data.data) {
+        return message.reply("No encontré estadísticas de ese jugador.");
+      }
+
+      const data = res.data.data;
       const stats = data.stats.all.overall;
 
       const winrate = ((stats.wins / stats.matches) * 100).toFixed(1);
@@ -165,33 +166,28 @@ client.on('messageCreate', async message => {
       const avatar = `https://api.dicebear.com/7.x/bottts/png?seed=${jugador}`;
 
       await message.channel.send({
+        embeds: [{
+          color: 0x3498DB,
+          title: `📊 ${jugador}`,
+          thumbnail: { url: avatar },
 
-        embeds: [
-          {
-            color: 0x3498DB,
-            title: `📊 ${jugador}`,
-            thumbnail: { url: avatar },
+          description:
+          "━━━━━━━━━━━━━━━━━━\n" +
+          `🏆 **Victorias:** ${stats.wins}\n\n` +
+          `🎮 **Partidas:** ${stats.matches}\n\n` +
+          `⚔️ **Kills:** ${stats.kills}\n\n` +
+          `🎯 **K/D:** ${stats.kd}\n\n` +
+          `📈 **Winrate:** ${winrate}%\n\n` +
+          `⭐ **Nivel:** ${data.battlePass.level}\n` +
+          "━━━━━━━━━━━━━━━━━━",
 
-            description:
-              "━━━━━━━━━━━━━━━━━━\n" +
-              `🏆 **Victorias:** ${stats.wins}\n\n` +
-              `🎮 **Partidas:** ${stats.matches}\n\n` +
-              `⚔️ **Kills:** ${stats.kills}\n\n` +
-              `🎯 **K/D:** ${stats.kd}\n\n` +
-              `📈 **Winrate:** ${winrate}%\n\n` +
-              `⭐ **Nivel:** ${data.battlePass.level}\n` +
-              "━━━━━━━━━━━━━━━━━━",
-
-            footer: { text: "Estadísticas de Fortnite" }
-
-          }
-        ]
-
+          footer: { text: "Estadísticas de Fortnite" }
+        }]
       });
 
     } catch (error) {
 
-      message.reply("No pude encontrar ese jugador.");
+      message.reply("No pude encontrar ese jugador o los servidores están en mantenimiento.");
 
     }
 
@@ -206,12 +202,18 @@ client.on('messageCreate', async message => {
 
     try {
 
-      const response = await axios.get("https://fortnite-api.com/v2/status");
-      const estado = response.data.status;
+      const res = await axios.get("https://status.epicgames.com/api/v2/status.json");
+      const estado = res.data.status.indicator;
 
-      if (estado === "UP") message.channel.send("🟢 online");
-      else if (estado === "DOWN") message.channel.send("🔴 caídos");
-      else message.channel.send("🟡 mantenimiento");
+      if (estado === "none") {
+        message.channel.send("🟢 online");
+      }
+      else if (estado === "minor" || estado === "major") {
+        message.channel.send("🟡 mantenimiento");
+      }
+      else {
+        message.channel.send("🔴 caídos");
+      }
 
     } catch {
 
@@ -229,43 +231,39 @@ client.on('messageCreate', async message => {
   if (message.content === "!ayuda") {
 
     await message.channel.send({
-      embeds: [
-        {
-          color: 0xE74C3C,
-          author: {
-            name: message.author.username,
-            icon_url: message.author.displayAvatarURL()
-          },
-          title: "📖 Centro de Comandos",
-          description:
-            "━━━━━━━━━━━━━━━━━━\n\n" +
+      embeds: [{
+        color: 0xE74C3C,
+        author: {
+          name: message.author.username,
+          icon_url: message.author.displayAvatarURL()
+        },
+        title: "📖 Centro de Comandos",
+        description:
+          "━━━━━━━━━━━━━━━━━━\n\n" +
 
-            "🎮 **Juegos**\n" +
-            "`!game nombre`\n" +
-            "Muestra información de cualquier videojuego.\n\n" +
+          "🎮 **Juegos**\n" +
+          "`!game nombre`\n" +
+          "Información de videojuegos.\n\n" +
 
-            "🎮 **Fortnite**\n" +
-            "`!fortnite jugador`\n" +
-            "Muestra estadísticas del jugador.\n\n" +
+          "🎮 **Fortnite**\n" +
+          "`!fortnite jugador`\n" +
+          "Estadísticas del jugador.\n\n" +
 
-            "`!servidores`\n" +
-            "Estado de los servidores de Fortnite.\n\n" +
+          "`!servidores`\n" +
+          "Estado de servidores.\n\n" +
 
-            "⚙️ **Utilidades**\n" +
-            "`!cagada mensaje`\n" +
-            "El bot envía tu mensaje como si fuera él.\n\n" +
+          "⚙️ **Utilidades**\n" +
+          "`!cagada mensaje`\n" +
+          "Enviar mensaje como el bot.\n\n" +
 
-            "❓ **Información**\n" +
-            "`!ayuda`\n" +
-            "Muestra esta lista de comandos.\n\n" +
+          "❓ **Información**\n" +
+          "`!ayuda`\n" +
+          "Lista de comandos.\n\n" +
 
-            "━━━━━━━━━━━━━━━━━━",
+          "━━━━━━━━━━━━━━━━━━",
 
-          footer: {
-            text: "Sistema de ayuda del bot"
-          }
-        }
-      ]
+        footer: { text: "Sistema de ayuda del bot" }
+      }]
     });
 
     return;
@@ -322,7 +320,7 @@ client.on('messageCreate', async message => {
 
 });
 
-// 🔥 Verificación de token
+// 🔐 LOGIN
 
 if (!process.env.TOKEN) {
   console.log("❌ TOKEN no detectado en el entorno");
@@ -341,7 +339,7 @@ client.login(process.env.TOKEN)
   console.error(err);
 });
 
-// 🌐 Servidor web (para Railway)
+// 🌐 Servidor web
 
 const app = express();
 
